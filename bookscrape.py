@@ -29,15 +29,15 @@ for l in allLi:
 image = phaseOneSoup.find("img")
 
 #Lists of column headings and scraped data
-headings = ["Product Page URL: ", "UPC: ", "Title: ", "Price Including Tax: ", "Price Excluding Tax: ",
-             "Quantity Available: ", "Product Description: ", "Category: ", "Reviews: ", "Image URL: "]
+headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
+             "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
 
 phaseOneData = [phaseOneURL, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
                  liList[3], reviews.text, image['src']]
 
 #Write data to csv file
 with open('bts.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
+    writer = csv.writer(csvfile, delimiter=' ')
 
     for i in range(len(phaseOneData)):
         row = [headings[i], phaseOneData[i]]
