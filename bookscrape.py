@@ -2,93 +2,70 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 
-url = "http://books.toscrape.com/catalogue/category/books/travel_2/index.html"
+url = "http://books.toscrape.com/"
 page = requests.get(url)
 soup = BeautifulSoup(page.content, 'html.parser')
 
-#Scraping data and storing as variables
-'''
-tableData = soup.find_all("td")
-upc = tableData[0]
-priceTax = tableData[2]
-priceNoTax = tableData[3]
-quantity = tableData[5]
-reviews = tableData[6]
+navbar = soup.find("ul", class_="nav")
 
-title = soup.find("h1")
+categories = navbar.find_all("a")
+categoryLinks = []
 
-allP = soup.find_all("p")
-pList = []
-for p in allP:
-    pList.append(p.string)
+for c in categories[1:]:
+    categoryLinks.append(c['href'])
 
-allLi = soup.find_all("a")
-liList = []
-for l in allLi:
-    liList.append(l.string)
+for c in categoryLinks:
 
-image = soup.find("img")
+    url = "http://books.toscrape.com/" + c
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
 
-#Lists of column headings and scraped data
-headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
-             "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
+    categoryTitle = soup.find("h1")
+    csvTitle = categoryTitle.string.replace(" ", "").lower() + ".csv"
+    print(csvTitle)
 
-productData = [url, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
-                 liList[3], reviews.text, image['src']]
-'''
+    pods = soup.find_all("article", class_="product_pod")
+    links = []
 
-#Write data to csv file
-'''
-with open('bts.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=' ')
+    for p in pods:
+        link = p.find("a")
+        links.append(link['href'])
 
-    for i in range(len(productData)):
-        row = [headings[i], productData[i]]
-        writer.writerow(row)
-'''
+    for l in links:
+        bookUrl = "http://books.toscrape.com/catalogue/" + l[9:]
+        bookPage = requests.get(bookUrl)
+        bookSoup = BeautifulSoup(bookPage.content, 'html.parser')
 
-pods = soup.find_all("article", class_="product_pod")
-links = []
+        tableData = bookSoup.find_all("td")
+        upc = tableData[0]
+        priceTax = tableData[2]
+        priceNoTax = tableData[3]
+        quantity = tableData[5]
+        reviews = tableData[6]
 
-for p in pods:
-    link = p.find("a")
-    links.append(link['href'])
+        title = bookSoup.find("h1")
 
-for l in links:
-    bookUrl = "http://books.toscrape.com/catalogue/" + l[9:]
-    bookPage = requests.get(bookUrl)
-    bookSoup = BeautifulSoup(bookPage.content, 'html.parser')
+        allP = bookSoup.find_all("p")
+        pList = []
+        for p in allP:
+            pList.append(p.string)
 
-    tableData = bookSoup.find_all("td")
-    upc = tableData[0]
-    priceTax = tableData[2]
-    priceNoTax = tableData[3]
-    quantity = tableData[5]
-    reviews = tableData[6]
+        allLi = bookSoup.find_all("a")
+        liList = []
+        for l in allLi:
+            liList.append(l.string)
 
-    title = bookSoup.find("h1")
+        image = bookSoup.find("img")
 
-    allP = bookSoup.find_all("p")
-    pList = []
-    for p in allP:
-        pList.append(p.string)
+        headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
+                    "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
 
-    allLi = bookSoup.find_all("a")
-    liList = []
-    for l in allLi:
-        liList.append(l.string)
+        productData = [bookUrl, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
+                        liList[3], reviews.text, image['src']]
+                        
+        with open(csvTitle, 'a', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile, delimiter=' ')
 
-    image = bookSoup.find("img")
-
-    headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
-                 "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
-
-    productData = [bookUrl, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
-                     liList[3], reviews.text, image['src']]
-    
-    with open('bts.csv', 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=' ')
-
-        for i in range(len(productData)):
-            row = [headings[i], productData[i]]
-            writer.writerow(row)
+            for i in range(len(productData)):
+                row = [headings[i], productData[i]]
+                writer.writerow(row)
