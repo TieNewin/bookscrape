@@ -16,6 +16,7 @@ imageNumber = 1
 for c in categories[1:]:
     categoryLinks.append(c['href'])
 
+#Loop through each category of entire site
 for c in categoryLinks:
 
     url = "http://books.toscrape.com/" + c
@@ -29,15 +30,18 @@ for c in categoryLinks:
     pods = soup.find_all("article", class_="product_pod")
     links = []
 
+    #Loop through book pods in each category to get to individual book
     for p in pods:
         link = p.find("a")
         links.append(link['href'])
 
+    #Loop through individual books to scrape data
     for l in links:
         bookUrl = "http://books.toscrape.com/catalogue/" + l[9:]
         bookPage = requests.get(bookUrl)
         bookSoup = BeautifulSoup(bookPage.content, 'html.parser')
 
+        #Extract
         tableData = bookSoup.find_all("td")
         upc = tableData[0]
         priceTax = tableData[2]
@@ -67,10 +71,13 @@ for c in categoryLinks:
 
         headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
                     "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
-
+        
+        #Transform
         productData = [bookUrl, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
                         liList[3], reviews.text, image['src']]
-                        
+
+        #Load
+        #Write data to csv file             
         with open("csv_files/" + csvTitle, 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=' ')
 
