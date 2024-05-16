@@ -11,6 +11,7 @@ navbar = soup.find("ul", class_="nav")
 
 categories = navbar.find_all("a")
 categoryLinks = []
+imageNumber = 1
 
 for c in categories[1:]:
     categoryLinks.append(c['href'])
@@ -58,10 +59,11 @@ for c in categoryLinks:
 
         image = bookSoup.find("img")
         imgURL = "http://books.toscrape.com/" + image['src'][6:]
-        imageName = title.string.replace(" ", "").lower() + ".jpg"
+        imageName = "image" + str(imageNumber) + ".jpg"
 
         img = Image.open(requests.get(imgURL, stream = True).raw)
         img.save("image_files/" + imageName)
+        imageNumber += 1
 
         headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
                     "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
