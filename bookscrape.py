@@ -1,6 +1,7 @@
 import csv
 import requests
 from bs4 import BeautifulSoup
+from PIL import Image
 
 url = "http://books.toscrape.com/"
 page = requests.get(url)
@@ -22,7 +23,7 @@ for c in categoryLinks:
 
     categoryTitle = soup.find("h1")
     csvTitle = categoryTitle.string.replace(" ", "").lower() + ".csv"
-    print(csvTitle)
+    print("Writing " + csvTitle)
 
     pods = soup.find_all("article", class_="product_pod")
     links = []
@@ -56,6 +57,11 @@ for c in categoryLinks:
             liList.append(l.string)
 
         image = bookSoup.find("img")
+        imgURL = "http://books.toscrape.com/" + image['src'][6:]
+        imageName = title.string.replace(" ", "").lower() + ".jpg"
+
+        img = Image.open(requests.get(imgURL, stream = True).raw)
+        img.save("image_files/" + imageName)
 
         headings = ["URL:", "UPC:", "Title:", "PriceW/Tax:", "PriceW/OTax:",
                     "Quantity:", "Description:", "Category:", "Reviews:", "ImageURL:"]
@@ -63,7 +69,7 @@ for c in categoryLinks:
         productData = [bookUrl, upc.text, title.text, priceTax.text, priceNoTax.text, quantity.text, pList[3],
                         liList[3], reviews.text, image['src']]
                         
-        with open(csvTitle, 'a', newline='', encoding='utf-8') as csvfile:
+        with open("csv_files/" + csvTitle, 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=' ')
 
             for i in range(len(productData)):
